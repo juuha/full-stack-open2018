@@ -11,21 +11,19 @@ class App extends React.Component {
     }
   }
 
-  hyva = () => {
-    this.setState({
-      hyva: this.state.hyva +1
-    })
-  }
+  nappi = (palaute) => () => {
+    const apu = {
+      hyva: this.state.hyva,
+      neutraali: this.state.neutraali,
+      huono: this.state.huono
+    }
 
-  neutraali = () => {
-    this.setState({
-      neutraali: this.state.neutraali +1
-    })
-  }
+    apu[palaute]++
 
-  huono = () => {
     this.setState({
-      huono: this.state.huono +1
+      hyva: apu.hyva,
+      neutraali: apu.neutraali,
+      huono: apu.huono
     })
   }
 
@@ -35,7 +33,7 @@ class App extends React.Component {
     const Button = (props) => {
       return (
         <>
-          <button onClick={props.action}>{props.name}</button>
+          <button onClick={this.nappi(props.action)} actionname={props.action} >{props.name}</button>
         </>
       )
     }
@@ -44,9 +42,9 @@ class App extends React.Component {
       return (
         <div>
           <h2>anna palautetta</h2>
-          <Button name={'hyvä'} action={this.hyva} />
-          <Button name={'neutraali'} action={this.neutraali} />
-          <Button name={'huono'} action={this.huono} />
+          <Button name={'hyvä'} action={'hyva'} />
+          <Button name={'neutraali'} action={'neutraali'} />
+          <Button name={'huono'} action={'huono'} />
         </div>
       )
     }
@@ -56,7 +54,7 @@ class App extends React.Component {
 
       return (
         <>
-          keskiarvo {ka}
+          {ka}
         </>
       )
     }
@@ -73,9 +71,12 @@ class App extends React.Component {
 
     const Statistic = (props) => {
       return (
-        <div>
-          {props.text} {props.num}
-        </div>
+        <tbody>
+          <tr>
+            <td>{props.text}</td> 
+            <td>{props.num}</td>
+          </tr>
+        </tbody>
       )
     }
 
@@ -91,11 +92,13 @@ class App extends React.Component {
       return (
         <div>
           <h2>statistiikka</h2>
-          <Statistic text={'hyvä'} num={this.state.hyva} />
-          <Statistic text={'neutraali'} num={this.state.neutraali} />
-          <Statistic text={'huono'} num={this.state.huono} />
-          <Statistic text={'keskiarvo'} num={Keskiarvo()} />
-          <Statistic text={'positiivisia'} num={Positiivisia()} />
+          <table>
+            <Statistic text={'hyvä'} num={this.state.hyva} />
+            <Statistic text={'neutraali'} num={this.state.neutraali} />
+            <Statistic text={'huono'} num={this.state.huono} />
+            <Statistic text={'keskiarvo'} num={Keskiarvo()} />
+            <Statistic text={'positiivisia'} num={Positiivisia()} />
+          </table>
         </div>
       )
     }
