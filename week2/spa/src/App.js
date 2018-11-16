@@ -1,6 +1,6 @@
 import React from 'react'
 import Note from './components/Note'
-import axios from 'axios'
+import noteService from './services/notes'
 
 class App extends React.Component {
   constructor(props) {
@@ -10,48 +10,62 @@ class App extends React.Component {
       newNote: '',
       showAll: true
     }
-    console.log('constructor')
   }
 
   componentDidMount() {
-    console.log('did mount')
-    axios
-      .get('http://localhost:3001/notes')
-      .then(response => {
-      console.log('promise fulfilled')
-      this.setState({ notes: response.data })
-    })
+    noteService
+      .getAll()
+      .then(notes => {
+        this.setState({notes})
+      })
   }
 
   toggleVisible = () => {
-    this.setState({showAll: !this.state.showAll})
+    this.setState({ showAll: !this.state.showAll })
   }
 
   handleNoteChange = (event) => {
-    console.log(event.target.value)
     this.setState({ newNote: event.target.value})
+  }
+
+  toggleImportanceOf = (id) => {
+    return () => {
+      const note = this.state.notes.find(n => n.id === id)
+      const changedNote = { ...note, important: !note.important }
+
+      noteService
+        .update(id, changedNote)
+        .then(changedNote => {
+          this.setState({
+            notes: this.state.notes.map(note => note.id !== id ? note : changedNote)
+          })
+        })
+        .catch(error => {
+          alert(`muistiinpano '${note.content}' on jo valitettavasti poistettu palvelimelta`)
+          this.setState({ notes: this.state.notes.filter(n => n.id !== id) })
+        })
+    }
   }
 
   addNote = (event) => {
     event.preventDefault()
     const noteObject = {
       content: this.state.newNote,
-      date: new Date().toISOString(),
-      important: Math.random() > 0.5,
-      id: this.state.notes.length +1
+      date: new Date(),
+      important: Math.random() > 0.5
     }
-
-    const notes = this.state.notes.concat(noteObject)
-
-    this.setState({
-      notes,
-      newNote: ''
-    })
+  
+    noteService
+        .create(noteObject)
+        .then(newNote => {
+          this.setState({
+            notes: this.state.notes.concat(newNote),
+            newNote: ''
+          })
+        })
   }
 
   render() {
-    console.log('render')
-
     const notesToShow = 
       this.state.showAll ?
         this.state.notes :
@@ -62,7 +76,6 @@ class App extends React.Component {
     return (
       <div>
         <h1>Muistiinpanot</h1>
-
         <div>
           <button onClick={this.toggleVisible}>
             näytä {label}
@@ -70,7 +83,13 @@ class App extends React.Component {
         </div>
 
         <ul>
-          {notesToShow.map(note => <Note key={note.id} note={note} />)}
+          {notesToShow.map(note =>
+            <Note
+              key={note.id}
+              note={note}
+              toggleImportance={this.toggleImportanceOf(note.id)}
+            />
+          )}
         </ul>
         <form onSubmit={this.addNote}>
           <input 

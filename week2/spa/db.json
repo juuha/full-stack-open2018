@@ -4,7 +4,7 @@
       "id": 1,
       "content": "HTML on helppoa",
       "date": "2017-12-10T17:30:31.098Z",
-      "important": true
+      "important": false
     },
     {
       "id": 2,
@@ -17,6 +17,12 @@
       "content": "HTTP-protokollan tärkeimmät metodit ovat GET ja POST",
       "date": "2017-12-10T19:20:14.298Z",
       "important": true
+    },
+    {
+      "content": "droop",
+      "date": "2018-11-16T15:40:07.388Z",
+      "important": false,
+      "id": 4
     }
   ]
 }

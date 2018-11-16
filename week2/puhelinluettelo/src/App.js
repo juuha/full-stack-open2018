@@ -1,7 +1,7 @@
 import React from 'react'
 import Numbers from './components/Numbers'
 import Filter from './components/Filter'
-import axios from 'axios'
+import personService from './services/persons'
 
 class App extends React.Component {
   constructor(props) {
@@ -15,10 +15,9 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    axios
-      .get('http://localhost:3001/persons')
+    personService
+      .getAll()
       .then(response => {
-        console.log('found')
         this.setState({ persons: response.data })
       })
   }
@@ -39,18 +38,49 @@ class App extends React.Component {
     event.preventDefault()
     
     if (this.state.persons.map(person => person.name).includes(this.state.newName)){
-      alert('Sama nimi ei saa toistua.')
+      this.updatePerson()
       return
     }
 
-    const person = {
+    const personObject = {
       name: this.state.newName,
       number: this.state.newNumber
     }
 
-    const persons = this.state.persons.concat(person)
+    personService
+      .create(personObject)
+      .then(response => {
+        this.setState({
+          persons: this.state.persons.concat(response.data),
+          newName: '',
+          newNumber: ''
+        })
+      })
+  }
 
-    this.setState({ persons })
+  destroyPerson = (id) => {
+    if(window.confirm(`Poistetaanko ${this.state.persons.find(p => p.id === id).name}`)) {
+      personService
+        .destroy(id)
+        .then(response => {
+          this.setState({ persons: this.state.persons.filter(p => p.id !== id) })
+        })
+    }
+  }
+
+  updatePerson = () => {
+    if (window.confirm(`${this.state.newName} on jo luettelossa, korvataanko vanha numero uudella?`)) {
+      const person = this.state.persons.find(person => person.name === this.state.newName)
+      const changedPerson = { ...person, number: this.state.newNumber }
+
+      personService
+        .update(person.id, changedPerson)
+        .then(response => {
+          this.setState({
+            persons: this.state.persons.map(pers => pers.id !== person.id ? pers : changedPerson)
+          })
+        })
+    }
   }
 
   render() {
@@ -80,7 +110,7 @@ class App extends React.Component {
             </div>
           </form>
         </div>
-        <Numbers state={this.state} />
+        <Numbers state={this.state} destroyPerson={this.destroyPerson} />
       </div>
     )
   }
