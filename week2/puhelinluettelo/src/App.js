@@ -2,6 +2,7 @@ import React from 'react'
 import Numbers from './components/Numbers'
 import Filter from './components/Filter'
 import personService from './services/persons'
+import Notification from './components/Notification'
 
 class App extends React.Component {
   constructor(props) {
@@ -10,7 +11,8 @@ class App extends React.Component {
       persons: [],
       newName: '',
       newNumber: '',
-      filter: ''
+      filter: '',
+      success: null
     }
   }
 
@@ -55,17 +57,26 @@ class App extends React.Component {
           newName: '',
           newNumber: ''
         })
+        this.setState({ success: `${personObject.name} onnistuneesti lisätty.` })
       })
+    setTimeout(() => {
+      this.setState({success: null})
+    }, 5000)
   }
 
   destroyPerson = (id) => {
-    if(window.confirm(`Poistetaanko ${this.state.persons.find(p => p.id === id).name}`)) {
+    const name = this.state.persons.find(p => p.id === id).name
+    if(window.confirm(`Poistetaanko ${name}`)) {
       personService
         .destroy(id)
         .then(response => {
           this.setState({ persons: this.state.persons.filter(p => p.id !== id) })
+          this.setState({ success: `${name} onnistuneesti poistettu.` })
         })
     }
+    setTimeout(() => {
+      this.setState({success: null})
+    }, 5000)
   }
 
   updatePerson = () => {
@@ -79,14 +90,22 @@ class App extends React.Component {
           this.setState({
             persons: this.state.persons.map(pers => pers.id !== person.id ? pers : changedPerson)
           })
+          this.setState({ success: `${person.name}n numero onnistuneesti päivitetty.` })
+        })
+        .catch(error => {
+          this.addPerson()
         })
     }
+    setTimeout(() => {
+      this.setState({success: null})
+    }, 5000)
   }
 
   render() {
     return (
       <div>
         <h2>Puhelinluettelo</h2>
+        <Notification message={this.state.success} />
         <Filter filter={this.state.filter} handleFilter={this.handleFilterChange} />
         <div>
           <h3>Lisää uusi!</h3>
